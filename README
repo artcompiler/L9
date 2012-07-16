@@ -1,9 +1,8 @@
 OVERVIEW
 
-L8 is a language with JSON syntax and semantics. It constructs JavaScript values
-from JSON formatted text, and writes JSON formatted text from JavaScript values.
+L9 is a language of translating JavaScript ASTs into SVG ASTs with pretty printing semantics. 
 
-L8 is written in L0. 
+L9 is written in L0. 
 
 BUILDING
 
@@ -14,23 +13,23 @@ To build:
 
 This produces the file:
 
-   ../bin/l8c.swf
+   ../bin/l9c.swf
 
 
 USING
 
 To run:
 
-    ./comp.sh some.js
+    ./comp.sh some.js.ast
 
 or
 
-    avmshell ../bin/l8c.swf some.js
+    avmshell ../bin/l9c.swf some.js.ast
 
 where avmshell is the name of a recent build of Tamarin.
 
 
 This produces the file:
 
-    some.js.js
+    some.js.svg.ast
 
