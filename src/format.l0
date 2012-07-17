@@ -14,13 +14,13 @@
  *
  * The Original Code is [Open Source Virtual Machine.].
  *
- * The Initial Developer of the Original Code is
- * Adobe System Incorporated.
- * Portions created by the Initial Developer are Copyright (C) 2004-2006
+ * The Initial Developer of the Original Code is Art Compiler
+ *
+ * Portions created by the Initial Developer are Copyright (C) 2012
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Adobe AS3 Team
+ *   Jeff Dyer, Art Compiler
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,45 +36,155 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-use default namespace Ast,
-    namespace Ast;
-
 class Formatter {
     use default namespace internal, 
         namespace internal;
 
     var compact;
 
-    public var pool;
-    public function Formatter(pool) 
-        : pool=pool { }
+    public var root;
+    public var ctx;
+    public function Formatter(root) 
+        : root=root {
 
-    public function format(nid=0) {
-        if (nid === 0) {
-            nid = pool.exprs.length-1   // last node is the root node
+        let ast = {
+            tag: "svg" ,
+            elts: [ ]
         }
 
-        print("format() nid="+nid)
+        ctx = { ast: ast }
+     
+    }
 
-        let obj = pool[nid]
+    public function format(node=null) {
 
-        if (obj is Serializable)
-            return obj.serialize(this);
+        if (node===void 0) {
+            return
+        }
 
-        if (obj is Array) 
-            return formatArray(obj, true);
+        if (node===null) {
+            node = root
+        }
 
-        if (obj is Number || obj is Boolean || obj is int || obj is uint || obj === null || obj === undefined)
-            return String(obj);
+        let elts = [ ]
 
-        if (obj is String)
-            return '"' + sanitize(obj) + '"';
 
-        if (obj is Token::Tok)
-            return '"' + obj + '"';
+        if (node is Number || node is String) {
+            ctx.ast.elts.push(node)
+        }
+        else if (node is Array) {
+            print("formatting " + "Array")
+            for (let i = 0; i < node.length; i++) {
+                elts.push(format(node[i]))
+            }
+            return elts
+        }
+        else if (node is Object) {
+            print("formatting " + node.tag)
+            switch (node.tag) {
+            case "Identifier":
+                return {"tag": "text",
+                         "class": "LiteralString",
+                         "elts": [node.ident]
+                        }
+                break;
+            case "LiteralString":
+                return {"tag": "text",
+                         "class": "LiteralString",
+                         "elts": [node.strValue]
+                        }
+                break;
+            case "LiteralInt":
+                ctx.ast.elts.push(node.intValue);
+                break;
+            case "CallExpr":
+                elts.push(format(node.expr))
+                elts.push({"tag": "text", "class": "punc", "elts": ["("] })
+                for (let i = 0; i < node.args.length; i++) {
+                    if (i > 0) {
+                        elts.push({"tag": "text", "class": "punc", "elts": [","] })
+                    }
+                    elts.push(format(node.args[i]))
+                }
+                elts.push({"tag": "text", "class": "punc", "elts": [")"] })
+                return {"tag": "text",
+                        "class": "CallExpr",
+                        "elts": elts }
 
-        throw new Error("Unserializable datum " + obj.constructor);
-        return "[[" + obj + "]]";
+            case "BinaryExpr":
+                return { "tag": "text",
+                         "class": "BinaryExpr",
+                         "elts": [
+                             format(node.e1),
+                             formatBinaryOp(node.op),
+                             format(node.e2)
+                         ]
+                       }
+                break;
+            case "ExprStmt":
+                return { "tag": "text",
+                         "class": "ExprStmt",
+                         "elts": [ format(node.expr) ]
+                        }
+            case "Name":
+                return { "tag": "text",
+                         "class": "Name",
+                         "elts": [ format(node.id) ]
+                        }
+                break;
+            case "FuncName":
+                format(node.ident)
+                break;
+            case "Fixture":
+                format(node.name)
+                format(node.data)
+                break;
+            case "ValFixture":
+                ctx.ast.elts.push("var");
+                break;
+            case "LiteralArray":
+                format(node.exprs)
+                format(node.spread)
+                break;
+            case "LiteralComprehension":
+                format(node.expr)
+                format(node.forList)
+                format(node.ifCond)
+                break;
+            case "ComprehendFor":
+                format(node.head)
+                format(node.iterator)
+                format(node.subclause)
+                break;
+            case "ComprehendIf":
+                format(node.condition)
+                format(node.subclause)
+                break;
+            case "Head":
+                elts.push(format(node.fixtures))
+                elts.push(format(node.exprs))
+                return { "tag": "text",
+                         "class": "Head",
+                         "elts": elts 
+                       }
+            case "InitExpr":
+                format(node.head)
+                format(node.inits)
+                break;
+            case "Program":
+                elts.push(format(node.head))
+                elts.push(format(node.body))
+                return { "tag": "text", "class": "Program", "elts": elts }
+            default:
+                print("unhandled node="+node.tag)
+            }
+        }
+        else {
+        }
+    }
+
+    function formatBinaryOp(op) {
+        return "XX"
     }
 
     function formatArray(obj, linebreak) {

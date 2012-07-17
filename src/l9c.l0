@@ -22,6 +22,7 @@
  *
  * Contributor(s):
  *   Adobe AS3 Team
+ *   Jeff Dyer, Art Compiler
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -54,19 +55,24 @@
         let fname = files[i];
         let t0 = new Date;
 
+        // Read file
         let str = Util::readStringFromFile(fname)
 
-        let json = new Ast::JSON(str);
-        let value = json.toValue();
-        print("value[0].tag="+value[0].body)
-        let str = json.toString();
+        // Parse JSON
+        let json = new Ast::JSON("("+str+")");
+        let jsast = json.toValue();
 
-        Util::writeStringToFile(str, fname + ".js");
+        // Translate AST from JS.AST to SVG.AST
+        let formatter = new Formatter(jsast)
+        let svgast = formatter.format()
 
-        // This is a hack.  The profiler needs to be callback-based; the
-        // snapshot is captured so that the profiler won't lose data.
-        if (prof)
-            ESC::snapshotProfile();
+//        // Render JSON
+        let str = json.toString(svgast);
+
+        print(str)
+
+        // Write file
+        Util::writeStringToFile(str, fname + ".l9");
 
     }
 
