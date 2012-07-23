@@ -59,7 +59,7 @@ class Formatter {
     public function format(node=null) {
 
         if (node===void 0) {
-            return
+             return
         }
 
         if (node===null) {
@@ -91,7 +91,7 @@ class Formatter {
             case "LiteralString":
                 return {"tag": "text",
                          "class": "LiteralString",
-                         "elts": [node.strValue]
+                         "elts": ["'"+node.strValue+"'"]
                         }
                 break;
             case "LiteralInt":
@@ -124,7 +124,28 @@ class Formatter {
             case "ExprStmt":
                 return { "tag": "text",
                          "class": "ExprStmt",
-                         "elts": [ format(node.expr) ]
+                         "elts": [
+                             format(node.expr)
+                         ]
+                        }
+            case "BlockStmt":
+                return { "tag": "text",
+                         "class": "BlockStmt",
+                         "elts": [
+                             elts.push({"tag": "text", "class": "punc", "elts": ["{"] }),
+                             format(node.block),
+                             elts.push({"tag": "text", "class": "punc", "elts": ["}"] })
+                         ]
+                        }
+            case "IfStmt":
+                return { "tag": "text",
+                         "class": "IfStmt",
+                         "elts": [ 
+                             elts.push({"tag": "text", "class": "punc", "elts": ["("] }),
+                             format(node.test),
+                             elts.push({"tag": "text", "class": "punc", "elts": [")"] }),
+                             format(node.consequent)
+                         ]
                         }
             case "Name":
                 return { "tag": "text",
@@ -172,6 +193,10 @@ class Formatter {
                 format(node.inits)
                 break;
             case "Program":
+                elts.push(format(node.head))
+                elts.push(format(node.body))
+                return { "tag": "text", "class": "Program", "elts": elts }
+            case "Block":
                 elts.push(format(node.head))
                 elts.push(format(node.body))
                 return { "tag": "text", "class": "Program", "elts": elts }

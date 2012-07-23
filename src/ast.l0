@@ -2146,6 +2146,18 @@ class ExprStmt extends ASTNode implements Stmt, Serializable {
 //         s.sClass(this, "SuperStmt", "args", "spread");
 // }
 
+// class Block extends ASTNode implements Serializable {
+//     const head  : ? Head;
+//     const stmts : [...Stmt];
+//     function Block (head,stmts)
+//         : head = head
+//         , stmts = stmts { }
+
+//     function serialize(s) 
+//         s.sClass(this, "Block", "head", "stmts");
+// }
+
+
 /*
  * PROGRAM
  */

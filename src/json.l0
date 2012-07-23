@@ -131,6 +131,14 @@ class JSON {
         throw "node type unknown: " + node.constructor;
     }
 
+    function pad(delta=0) {
+        let padding = [];
+        padding[indent+delta]=""
+        return "\n" + padding.join("  ")
+    }
+
+    var indent = 0
+
     function encode(obj) {
         let str = "";
 
@@ -139,21 +147,34 @@ class JSON {
             isArray = true;
         }
 
+//        str += pad()
+
         if (isArray) {
             str += "[";
+            indent++;
         }
         else {
             str += "{";
+            indent++;
         }
 
         for (var p in obj) {
             var last = str.charAt(str.length-1);
             if (last != "[" && last != "{") {
-                str += ", ";
+                str += ", "
+                str += pad()
             }
-            
+            else {
+                if (last === "[") {
+                    str += pad()
+                }
+                else {
+                    str += " "
+                }
+            }
+
             if (!isArray) { 
-                str += '"' + p + '"' + ":";
+                str += '"' + p + '"' + ": ";
             }
 
             switch (typeof obj[p]) {
@@ -171,10 +192,15 @@ class JSON {
             }
         }
 
+
         if (isArray) {
+            indent--;
+            str += pad()
             str += "]";
         }
         else {
+            indent--;
+            str += pad()
             str += "}";
         }
         

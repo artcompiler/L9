@@ -1,1 +1,135 @@
-<<grammar for JavaScript ASTs here>>
+Node {  AttributeList  }
+
+AttributeList
+    Attribute
+    AttributeList  ,  Attribute
+
+Attribute
+    "tag"  :  TagName
+    "elts"  :  ElementList
+    String  :  Value
+
+String
+    "  Chars  "
+
+Value
+    String
+    Object
+    Array
+
+Object
+    {  PropertyList  }
+
+PropertyList
+    Property
+    PropertyList  ,  Property
+
+Array
+    [  ElementList  ]
+
+ElementList
+    Value
+    ElementList  ,  Value
+
+Chars
+    [any valid JavaScript sequence of unicode characters]
+
+
+The following node types are found in the L7 AST. They are represented
+
+TagName { AttributeList }, where AttributeList contains at least the attributes
+represented in braces below.
+
+ENVIRONMENTS AND BINDINGS
+
+    Head { fixtures, inits }
+    Fixture { name, data }
+    ClassFixture { cls }
+    MethodFixture { func, isReadOnly }
+    ValFixture { isReadOnly }
+    VirtualValFixture { getter, setter }
+    ModuleFixture { module }
+    InitBinding { name, expr }
+
+PATTERNS
+
+    ObjectPattern { fieldPatterns }
+    FieldPattern { ident, pattern }
+    ArrayPattern { patterns, spread }
+    SimplePattern { expr }
+    IdentifierPattern { ident }
+
+EXPRESSIONS
+
+    Name { ident }
+    TernaryExpr { e1, e2, e3 }
+    BinaryExpr { op, e1, e2 }
+    UnaryExpr { op, e1 }
+    This Expr { }
+    YieldExpr { expr }
+    SuperExpr { expr }
+    CallExpr { expr, args, spread, strict }
+    NewExpr { expr, args, spread }
+    ObjectRef { base, ident }
+    ComputedName { expr }
+    SetExpr { op, expr1, expr2 }
+    EvalScopeInitExpr { index, how }
+    ComprehendIf { condition }
+    ComprehendLet { head, subclause }
+    ComprehendFor { head, iterator, subclause }
+    InitExpr { target, head, inits }
+    Identifier { ident }
+    LiteralNull { }
+    LiteralUndefined { }
+    LiteralDouble { doubleValue }
+    LiteralInt { intValue }
+    LiteralUInt { uintValue }
+    LiteralBoolean { booleanValue }
+    LiteralString { stringValue }
+    LiteralArray { exprs, spread }
+    LiteralComprehension { expr, forList, ifCond }
+    LiteralObject { fields }
+    LiteralField { kind, ident, expr }
+    VirtualField { tag, name, kind, func }
+    LiteralFunc { func }
+    LiteralRegExp { src }
+
+INFOS
+
+    Cls { name, baseName, ctor, classHead, instanceHead, classType, instanceType, body }
+    Func { name, body, params, vars, defaults, attrs, strict }
+    FuncName { kind, ident }
+    FuncAttr { uses_arguments, uses_eval, uses_rest, uses_with, uses_catch, uses_finally,
+               uses_yield, uses_super }
+    Ctor { settings, superArgs, superSpread, func }
+    ParamIdent { index }
+
+STATEMENTS
+    
+    EmptyStmt { }
+    ExprStmt { expr }
+    ForInStmt { assignment, tmp, obj, stmt, labels }
+    ForInBindingStmt { head, assignment, tmp, init, obj, stmt, labels }
+    ThrowStmt { expr }
+    ReturnStmt { expr }
+    BreakStmt { ident }
+    ContinueStmt { ident }
+    BlockStmt { block }
+    LabeledStmt { ident, stmt }
+    LetBlockStmt { outerHead, innerHead, stmts }
+    WhileStmt { expr, stmt, labels }
+    DoWhileStmt { expr, stmt, labels }
+    ForStmt { init, cond, incr, stmt, labels }
+    ForBindingStmt { head, init, cond, incr, stmt, labels }
+    IfStmt { test, consequent, alternate }
+    SwitchStmt { head, expr, cases }
+    Case { expr, stmts }
+    WithStmt { expr, stmt }
+    TryStmt { block, catches, finally }
+    Catch { param, block }
+
+PROGRAMS AND MODULES
+
+    Program { head, stmts, attrs }
+    Module { name, head, body }
+    Import { importSpec, moduleSpec }

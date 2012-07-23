@@ -1,6 +1,7 @@
 OVERVIEW
 
-L9 is a language of translating JavaScript ASTs into SVG ASTs with pretty printing semantics. 
+L9 is a language of translating JavaScript ASTs (e.g. L7) into SVG ASTs with
+pretty printing semantics. 
 
 L9 is written in L0. 
 
@@ -20,16 +21,15 @@ USING
 
 To run:
 
-    ./comp.sh some.js.ast
+    ./comp.sh some.js.l7
 
 or
 
-    avmshell ../bin/l9c.swf some.js.ast
+    avmshell ../bin/l9c.swf some.js.l7
 
 where avmshell is the name of a recent build of Tamarin.
 
-
 This produces the file:
 
-    some.js.svg.ast
+    some.js.l7.l9
 

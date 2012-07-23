@@ -1,1 +1,110 @@
-[{"tag":"text", "class":"Program", "elts":[{"tag":"text", "class":"Head", "elts":[[], []]}, [{"tag":"text", "class":"ExprStmt", "elts":[{"tag":"text", "class":"CallExpr", "elts":[{"tag":"text", "class":"LiteralString", "elts":["print"]}, {"tag":"text", "class":"punc", "elts":["("]}, {"tag":"text", "class":"LiteralString", "elts":["hello, world!"]}, {"tag":"text", "class":"punc", "elts":[")"]}]}]}]]}]
+[
+  { "tag": "tspan", 
+    "class": "Program", 
+    "elts": [
+      { "tag": "tspan", 
+        "class": "Head", 
+        "elts": [
+          [
+          ], 
+          [
+          ]
+        ]
+      }, 
+      [
+        { "tag": "tspan", 
+          "class": "ExprStmt", 
+          "elts": [
+            { "tag": "tspan", 
+              "class": "CallExpr", 
+              "elts": [
+                { "tag": "tspan", 
+                  "x": 15, 
+                  "fill": "#F0F", 
+                  "elts": [
+                    "print"
+                  ], 
+                  "class": "Identifier", 
+                  "y": 25
+                }, 
+                { "tag": "tspan", 
+                  "x": 90, 
+                  "elts": [
+                    "("
+                  ], 
+                  "class": "punc", 
+                  "y": 25
+                }, 
+                [
+                  { "tag": "tspan", 
+                    "x": 105, 
+                    "fill": "#00F", 
+                    "elts": [
+                      "\'hello, world!\'"
+                    ], 
+                    "class": "LiteralString", 
+                    "y": 25
+                  }
+                ], 
+                { "tag": "tspan", 
+                  "x": 330, 
+                  "elts": [
+                    ")"
+                  ], 
+                  "class": "punc", 
+                  "y": 25
+                }
+              ]
+            }
+          ]
+        }, 
+        { "tag": "tspan", 
+          "class": "ExprStmt", 
+          "elts": [
+            { "tag": "tspan", 
+              "class": "CallExpr", 
+              "elts": [
+                { "tag": "tspan", 
+                  "x": 15, 
+                  "fill": "#F0F", 
+                  "elts": [
+                    "print"
+                  ], 
+                  "class": "Identifier", 
+                  "y": 50
+                }, 
+                { "tag": "tspan", 
+                  "x": 90, 
+                  "elts": [
+                    "("
+                  ], 
+                  "class": "punc", 
+                  "y": 50
+                }, 
+                [
+                  { "tag": "tspan", 
+                    "x": 105, 
+                    "fill": "#00F", 
+                    "elts": [
+                      "\'adios, world!\'"
+                    ], 
+                    "class": "LiteralString", 
+                    "y": 50
+                  }
+                ], 
+                { "tag": "tspan", 
+                  "x": 330, 
+                  "elts": [
+                    ")"
+                  ], 
+                  "class": "punc", 
+                  "y": 50
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    ]
+  }
+]

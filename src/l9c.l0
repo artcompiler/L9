@@ -63,10 +63,11 @@
         let jsast = json.toValue();
 
         // Translate AST from JS.AST to SVG.AST
-        let formatter = new Formatter(jsast)
-        let svgast = formatter.format()
+        let transformer = new Transformer(jsast)
+        let svgast = transformer.transform()
 
-//        // Render JSON
+
+        // Render JSON
         let str = json.toString(svgast);
 
         print(str)

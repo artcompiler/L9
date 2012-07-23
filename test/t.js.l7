@@ -7,6 +7,14 @@
   "strValue": "hello, world!"}]
 ,  "spread": null
 ,  "pos": 1
+,  "strict": false}},{ "tag": "ExprStmt", 
+  "expr": { "tag": "CallExpr", 
+  "expr": { "tag": "Identifier", 
+  "ident": "print"}
+,  "args": [{ "tag": "LiteralString", 
+  "strValue": "adios, world!"}]
+,  "spread": null
+,  "pos": 2
 ,  "strict": false}}]
 ,  "head": { "tag": "Head", 
   "fixtures": []
