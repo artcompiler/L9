@@ -63,8 +63,13 @@ class Visitor {
         }
 
         if (isObject(node)) {
+            //print("visit() node.tag="+node.tag)
+
             if (node.tag && isFunction(table[node.tag])) {
                 return table[node.tag](node)
+            }
+            else {
+                throw "missing visitor method for " + node.tag                
             }
         }
 

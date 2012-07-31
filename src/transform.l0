@@ -1,0 +1,1743 @@
+/* -*- mode: javascript; tab-width: 4; indent-tabs-mode: nil -*- */
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is [Open Source Virtual Machine.].
+ *
+ * The Initial Developer of the Original Code is Art Compiler
+ *
+ * Portions created by the Initial Developer are Copyright (C) 2012
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *   Jeff Dyer, Art Compiler
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+class Transformer extends Visitor {
+
+    const xFactor = 15
+    const yFactor = 25
+
+    var root
+
+    function Transformer(root)
+        : root = root
+    {
+        table = {
+            "Head" : head,
+            "Fixture" : fixture,
+            "ClassFixture" : stub,
+            "MethodFixture" : methodFixture,
+            "ValFixture" : valFixture,
+            "VirtualValFixture" : stub,
+            "ModuleFixture" : stub,
+            "InitBinding" : initBinding,
+            "ObjectPattern" : stub,
+            "FieldPattern" : stub,
+            "ArrayPattern" : stub,
+            "SimplePattern" : stub,
+            "IdentifierPattern" : stub,
+            "Name" : name,
+            "TernaryExpr" : stub,
+            "BinaryExpr" : binaryExpr,
+            "UnaryExpr" : unaryExpr,
+            "ThisExpr" : thisExpr,
+            "YieldExpr" : stub,
+            "SuperExpr" : stub,
+            "CallExpr" : callExpr,
+            "NewExpr" : stub,
+            "ObjectRef" : objectRef,
+            "ComputedName" : computedName,
+            "SetExpr" : setExpr,
+            "EvalScopeInitExpr" : stub,
+            "ComprehendIf" : comprehendIf,
+            "ComprehendFor" : comprehendFor,
+            "InitExpr" : initExpr,
+            "Identifier" : identifier,
+            "LiteralNull" : literalNull,
+            "LiteralUndefined" : literalUndefined,
+            "LiteralDouble" : stub,
+            "LiteralInt" : literalInt,
+            "LiteralUInt" : stub,
+            "LiteralBoolean" : literalBoolean,
+            "LiteralString" : literalString,
+            "LiteralArray" : literalArray,
+            "LiteralComprehension" : arrayComprehension,
+            "LiteralObject" : literalObject,
+            "LiteralField" : literalField,
+            "VirtualField" : virtualField,
+            "LiteralFunction" : literalFunction,
+            "LiteralRegExp" : stub,
+            "Cls" : stub,
+            "Func" : func,
+            "FuncName" : funcName,
+            "FuncAttr" : stub,
+            "Ctor" : stub,
+            "ParamInit" : stub,
+            "EmptyStmt" : stub,
+            "ExprStmt" : exprStmt,
+            "ReturnStmt" : returnStmt,
+            "ThrowStmt" : throwStmt,
+            "BreakStmt" : breakStmt,
+            "ContinueStmt" : continueStmt,
+            "ForStmt" : forStmt,
+            "ForBindingStmt" : forBindingStmt,
+            "ForInStmt" : stub,
+            "ForInBindingStmt" : forInBindingStmt,
+            "IfStmt" : ifStmt,
+            "SwitchStmt" : stub,
+            "DoWhileStmt" : doWhileStmt,
+            "WhileStmt" : whileStmt,
+            "BlockStmt" : blockStmt,
+            "Block" : block,
+            "Case" : stub,
+            "WithStmt" : stub,
+            "TryStmt" : stub,
+            "Catch" : stub,
+            "Program" : program,
+            "Module" : stub,
+            "Import" : stub,
+            "Export" : stub,
+            "LetExpr" : letExpr,
+            "TempName" : tempName,
+            "GetTemp" : getTemp,
+            "GetCogenTemp" : getCogenTemp,
+            "GetParam" : getParam
+        }
+    }
+
+    function transform() {
+        return visit(root)
+    }
+
+    // BEGIN VISITOR METHODS
+
+    function program(node) {
+        print("program")
+        let elts = [ ]
+        elts.push(visit(node.head))
+        elts.push(visit(node.body))  // FIXME stmts
+//        elts.push(visit(node.attr))  // FIXME attrs
+        let n = { 
+            "tag": "tspan",
+            "class": "Program",
+            "elts": elts
+        }
+        return n
+    }
+
+    function exprStmt(node) {
+        print("exprStmt")
+        let elts = [ ]
+        elts.push(visit(node.expr))
+        ln += 1
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "ExprStmt",
+            "elts": elts
+        } 
+    }
+
+    function returnStmt(node) {
+        print("returnStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["return"]
+        })
+        col += ("return ").length
+        elts.push(visit(node.expr))
+        return {
+            "tag": "tspan",
+            "class": "ReturnStmt",
+            "elts": elts
+        } 
+    }
+
+    function throwStmt(node) {
+        print("throwStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["throw"]
+        })
+        col += "throw ".length
+        elts.push(visit(node.expr))
+        ln += 1
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "ThrowStmt",
+            "elts": elts
+        } 
+    }
+
+    function continueStmt(node) {
+        print("continueStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["continue"]
+        })
+        if (node.ident) {
+            col += "continue ".length
+            elts.push(visit(node.ident))
+        }
+        ln++
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "ContinueStmt",
+            "elts": elts
+        } 
+    }
+
+    function breakStmt(node) {
+        print("breakStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["break"]
+        })
+        if (node.ident) {
+            col += "break".length
+            elts.push(visit(node.ident))
+        }
+        ln++
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "BreakStmt",
+            "elts": elts
+        } 
+    }
+
+    function letExpr(node) {
+        print("letExpr")
+        let elts = [ ]
+        elts.push(visit(node.head))
+        ln += 1
+        col = indent()
+        elts.push(visit(node.expr))
+        ln += 1
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "LetExpr",
+            "elts": elts
+        } 
+    }
+
+    function blockStmt(node) {
+        print("blockStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["{"]
+        })
+        ln += 1
+        col = indent(+1)
+        elts.push(visit(node.block))
+        col = indent(-1)
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["}"]
+        })
+        return {
+            "tag": "tspan",
+            "class": "BlockStmt",
+            "elts": elts
+        }
+    }
+
+    function block(node) {
+        print("block")
+        let elts = [ ]
+        elts.push(visit(node.head))
+        elts.push(visit(node.stmts))
+        return { 
+            "tag": "tspan",
+            "class": "Block",
+            "elts": elts
+        } 
+    }
+
+    function ifStmt(node) {
+        print("ifStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["if"]
+        })
+        col += ("if ").length
+        elts.push(visit(node.test))
+        col++
+        if (node.consequent.tag !== "BlockStmt") {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["{"]
+            })
+            ln++
+            col = indent(+1)
+        }
+        elts.push(visit(node.consequent))
+        if (node.consequent.tag !== "BlockStmt") {
+            ln++
+            col = indent(-1)
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["}"]
+            })
+        }
+        ln++
+        if (node.alternate) {
+            elts.push({
+                "tag": "tspan",
+                "class": "keyword",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["else"]
+            })
+            col += ("else ").length
+            if (node.alternate.tag !== "BlockStmt") {
+                col++
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": ["{"]
+                })
+                ln++
+                col = indent(+1)
+            }
+            elts.push(visit(node.alternate))
+            if (node.alternate.tag !== "BlockStmt") {
+                ln++
+                col = indent(-1)
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": ["}"]
+                })
+            }
+            ln++
+        }
+        return {
+            "tag": "tspan",
+            "class": "IfStmt",
+            "elts": elts
+        } 
+    }
+
+    function whileStmt(node) {
+        print("whileStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["while"]
+        })
+        col += ("while ").length
+        elts.push(visit(node.expr))
+        col++
+        if (node.stmt.tag !== "BlockStmt") {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["{"]
+            })
+            ln++
+            col = indent(+1)
+        }
+        elts.push(visit(node.stmt))
+        if (node.stmt.tag !== "BlockStmt") {
+            ln++
+            col = indent(-1)
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["}"]
+            })
+        }
+        ln += 1
+        return {
+            "tag": "tspan",
+            "class": "WhileStmt",
+            "elts": elts
+        } 
+    }
+
+    function doWhileStmt(node) {
+        print("doWhileStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["do"]
+        })
+        col += ("do ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["{"]
+        })
+        ln += 1
+        col = indent(+1)
+        elts.push(visit(node.stmt))
+        ln += 1
+        col = indent(-1)
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["}"]
+        })
+        ln += 1
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["while"]
+        })
+        col += ("while ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length
+        elts.push(visit(node.expr))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        ln += 1
+        col = indent()
+        return {
+            "tag": "tspan",
+            "class": "DoWhileStmt",
+            "elts": elts
+        } 
+    }
+
+    function forStmt(node) {
+        print("forStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["for"]
+        })
+        col += ("for ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length
+        let tempCol = col
+        elts.push(visit(node.init))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [";"]
+        })
+        col += ("; ").length
+        ln++
+        col = tempCol
+        elts.push(visit(node.cond))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [";"]
+        })
+        col += ("; ").length
+        ln++
+        col = tempCol
+        elts.push(visit(node.incr))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        col += ") ".length
+        if (node.stmt.tag !== "BlockStmt") {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["{"]
+            })
+            ln++
+            col = indent(+1)
+        }
+        elts.push(visit(node.stmt))
+        if (node.stmt.tag !== "BlockStmt") {
+            ln++
+            col = indent(-1)
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["}"]
+            })
+        }
+        ln += 1
+        return {
+            "tag": "tspan",
+            "class": "ForStmt",
+            "elts": elts
+        } 
+    }
+
+    function forBindingStmt(node) {
+        print("forBindingStmt")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["for"]
+        })
+        col += ("for ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length
+        elts.push(visit(node.init))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [";"]
+        })
+        col += ("; ").length
+        elts.push(visit(node.cond))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [";"]
+        })
+        col += ("; ").length
+        elts.push(visit(node.incr))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        elts.push(visit(node.stmt))
+        return {
+            "tag": "tspan",
+            "class": "ForBindingStmt",
+            "elts": elts
+        } 
+    }
+
+    function setExpr(node) {
+        print("setExpr")
+        let elts = [ ]
+        elts.push(visit(node.le))
+        col += 1
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["="]
+        })
+        col += ("= ").length
+        elts.push(visit(node.re))
+        return { 
+            "tag": "tspan",
+            "class": "SetExpr",
+            "elts": elts
+        }
+    }
+
+    function forInBindingStmt(node) {
+        print("forInBindingStmt")
+        let elts = [ ]
+
+/*
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["head"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.head))
+        ln += 1
+        col = indent()
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["assignment"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.assignment))
+        ln += 1
+        col = indent()
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["tmp"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.tmp))
+        ln += 1
+        col = indent()
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["obj"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.obj))
+        ln += 1
+        col = indent()
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["init"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.init))
+        ln += 1
+        col = indent()
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["stmt"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.stmt))
+        ln += 1
+        col = indent()
+
+*/
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["for"]
+        })
+        col += ("for ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length
+        elts.push(visit(node.head))
+        elts.push(visit(node.assignment.inits[0].name))   // FIXME hide details behind function abstraction
+        col += 1
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["in"]
+        })
+        col += ("in ").length
+        elts.push(visit(node.obj))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        ln += 1
+        col = indent()
+        elts.push(visit(node.stmt))
+        ln += 1
+        col = indent()
+        ln += 1
+        return { 
+            "tag": "tspan",
+            "class": "ForInBindingStmt",
+            "elts": elts
+        }
+    }
+
+    function initExpr(node) {
+        print("initExpr")
+        let elts = [ ]
+        elts.push(visit(node.head))
+        elts.push(visit(node.inits))
+        return { 
+            "tag": "tspan",
+            "class": "InitExpr",
+            "elts": elts
+        }
+    }
+
+    function initBinding(node) {
+        print("initBinding")
+        let elts = [ ]
+        elts.push(visit(node.name))
+        col += 1
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["="]
+        })
+        col += ("= ").length
+        elts.push(visit(node.expr))
+        return { 
+            "tag": "tspan",
+            "class": "InitBinding",
+            "elts": elts
+        }
+        
+    }
+
+    function callExpr(node) {
+        print("callExpr")
+        let elts = [ ]
+        elts.push(visit(node.expr))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length
+        //elts.push(visit(node.args))
+        if (node.args.length > 0) {
+            indent(+1)
+            for (let i = 0; i < node.args.length; i++) {
+                if (node.args.length > 1) {
+                    ln++
+                    col = indent()
+                }
+                elts.push(visit(node.args[i]))
+                if (i < node.args.length-1) {
+                    elts.push({
+                        "tag": "tspan",
+                        "class": "punc",
+                        "x": xFactor * col,
+                        "y": yFactor * ln,
+                        "elts": [","]
+                    })
+                    col += ", ".length
+                }
+            }
+            indent(-1)
+        }
+        //elts.push(visit(node.spread))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        }) 
+        col += (")").length
+        let n = {
+            "tag": "tspan",
+            "class": "CallExpr",
+            "elts": elts
+        }
+        return n
+    }
+
+    function head(node) {
+        print("head")
+        let elts = [ ]
+        elts.push(visit(node.fixtures))
+        elts.push(visit(node.exprs))
+        return {
+            "tag": "tspan",
+            "class": "Head",
+            "elts": elts
+        }
+    }
+
+    function fixture(node) {
+        print("fixture")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["var"]
+        })
+        col += ("var ").length
+        elts.push(visit(node.name))
+        ln += 1
+        col = indent()
+        //elts.push(visit(node.data))
+        return { 
+            "tag": "tspan",
+            "class": "Fixture",
+            "elts": elts
+        }
+    }
+
+    function name(node) {
+        print("name")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "ident",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [String(node.id)]
+        })
+        col += (String(node.id)).length
+        return {
+            "tag": "tspan",
+            "class": "Name",
+            "elts": elts
+        }
+    }
+
+    function tempName(node) {
+        print("tempName")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "ident",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["$t"+node.index]
+        })
+        col += ("$t"+node.index).length
+        return {
+            "tag": "tspan",
+            "class": "TempName",
+            "elts": elts
+        }
+    }
+
+    function getCogenTemp(node) {
+        print("getCogenTemp")
+        let elts = [ ]
+        return {
+            "tag": "tspan",
+            "class": "GetCogenTemp",
+            "elts": elts
+        }
+    }
+
+    function getTemp(node) {
+        print("getTemp")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "ident",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["$t"+node.n]
+        })
+        col += ("$t"+node.n).length
+        return {
+            "tag": "tspan",
+            "class": "GetTemp",
+            "elts": elts
+        }
+    }
+
+    function getParam(node) {
+        print("getParam")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "ident",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [""+node.n]
+        })
+        col += (""+node.n).length
+        return {
+            "tag": "tspan",
+            "class": "GetParam",
+            "elts": elts
+        }
+    }
+
+    function literalFunction(node) {
+        print("literalFunction")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["function"]
+        })
+        col += ("function ").length
+        elts.push(visit(node.func))
+        return {
+            "tag": "tspan",
+            "class": "LiteralFunction",
+            "elts": elts
+        }
+    }
+
+    function methodFixture(node) {
+        print("methodFixture")
+        let elts = [ ]
+        elts.push(visit(node.func))
+        return {
+            "tag": "tspan",
+            "class": "MethodFixture",
+            "elts": elts
+        }
+    }
+
+    function valFixture(node) {
+        print("valFixture")
+        let elts = [ ]
+        return {
+            "tag": "tspan",
+            "class": "ValFixture",
+            "elts": elts
+        }
+    }
+
+    var ln = 1
+    var col = 1
+
+    var level = 1
+    const oneIndent = 4
+
+    function indent(delta=0) {
+        level += oneIndent * delta
+        return level
+    }
+
+    function func(node) {
+        print("func")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += "(".length
+        if (node.params.fixtures.length==0) {
+            // do nothing
+            indent(+1)   // to make the -1 below work out
+        }
+        else
+        if (node.params.fixtures.length==1) {
+            elts.push(visit(node.params.fixtures[i].name))
+            indent(+1)   // to make the -1 below work out
+        }
+        else {
+            ln += 1
+            col = indent(+1)
+            for (let i = 0; i < node.params.fixtures.length; i++) {
+                elts.push(visit(node.params.fixtures[i].name))
+                if (i < node.params.fixtures.length-1) {
+                    elts.push({
+                        "tag": "tspan",
+                        "class": "punc",
+                        "x": xFactor * col,
+                        "y": yFactor * ln,
+                        "elts": [","]
+                    })
+                    col = indent()
+                    ln += 1
+                }
+            }
+        }
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [") {"]
+        })
+        if (node.vars.length || node.body.length) {
+            ln += 1
+            col = indent()
+            elts.push(visit(node.vars))
+            //elts.push(visit(node.attr))
+            elts.push(visit(node.body))
+        }
+        ln += 1
+        col = indent(-1)
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["}"]
+        })
+        col += 1
+        return {
+            "tag": "tspan",
+            "class": "Func",
+            "elts": elts
+        }
+    }
+
+    function funcName(node) {
+        print("funcName")
+        let elts = [ ]
+        switch (node.kind) {
+        case 0:
+            // nothing to do
+            break
+        default:
+            throw "funcName kind not implemented"
+            break
+        }
+        elts.push(visit(node.ident))
+        let n = {
+            "tag": "tspan",
+            "class": "FuncName",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": elts
+        }
+        col += (node.ident + " ").length
+        return n
+    }
+
+    function identifier(node) {
+        print("identifier")
+        let n = {
+            "tag": "tspan",
+            "class": "Identifier",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [node.ident]
+        }
+        col += (node.ident).length
+        return n
+    }
+
+    function literalString(node) {
+        print("literalString")
+        let elts = []
+        if (node.strValue.charAt(0) === "'") {
+            elts.push('"'+node.strValue+'"')
+        }
+        else {
+            elts.push("'"+node.strValue+"'")
+        }
+        let n = {
+            "tag": "tspan",
+            "class": "LiteralString",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": elts
+        }
+        col += (node.strValue + "  ").length
+        return n        
+    }
+
+    function literalUndefined(node) {
+        print("literalUndefined")
+        let n = {
+            "tag": "tspan",
+            "class": "LiteralUndefined",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["void 0"]
+        }
+        col += ("void 0").length
+        return n        
+    }
+
+    function literalArray(node) {
+        print("literalArray")
+        let elts = [ ]
+        let tempCol = col
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * tempCol,
+            "y": yFactor * ln,
+            "elts": ["["]
+        })
+        for (let i = 0; i < node.exprs.length; i++) {
+            col = tempCol + 1
+            if (node.exprs[i].constructor !== Object || 
+                node.exprs[i].tag !== "LiteralUndefined") {
+                elts.push(visit(node.exprs[i]))
+            }
+            if (i < node.exprs.length-1) {
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": [","]
+                })
+                ln += 1
+            }
+        }
+        if (node.spread) {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["..."]
+            })
+            col += ("...").length
+            elts.push(visit(node.spread))
+            if (node.exprs.length > 0) {
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": [","]
+                })
+                ln += 1
+                col = tempCol
+            }
+            col = tempCol + 2
+        }
+        if (node.exprs.length != 0) {
+            ln += 1
+            col = tempCol
+        }
+        else {
+            col = tempCol + 2
+        }
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["]"]
+        })
+        col += ("]").length
+        return {
+            "tag": "tspan",
+            "class": "LiteralArray",
+            "elts": elts
+        }
+    }
+
+    function literalObject(node) {
+        print("literalObject")
+        let elts = [ ]
+        let tempCol = col
+        if (node.fields.length > 0) {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["{"]
+            })
+            indent(+1)
+            for (let i = 0; i < node.fields.length; i++) {
+                ln += 1
+                col = indent()
+                elts.push(visit(node.fields[i]))
+                if (i < node.fields.length - 1) {
+                    elts.push({
+                        "tag": "tspan",
+                        "class": "punc",
+                        "x": xFactor * col,
+                        "y": yFactor * ln,
+                        "elts": [","]
+                    })
+                }
+            }
+            ln += 1
+            col = indent(-1)
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["}"]
+            })
+            col += ("}").length
+        }
+        else {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["{ }"]
+            })
+            col += "{}".length
+        }
+        return {
+            "tag": "tspan",
+            "class": "LiteralObject",
+            "elts": elts
+        }
+    }
+
+    function literalField(node) {
+        print("literalField")
+        let elts = [ ]
+        elts.push(visit(node.ident))
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [":"]
+        })
+        col += ": ".length
+        elts.push(visit(node.expr))
+        return {
+            "tag": "tspan",
+            "class": "literalField",
+            "elts": elts
+        } 
+    }
+
+    function virtualField(node) {
+        print("virtualField")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [ node.kind===1 ? "get" : "set" ]
+        })
+        col += ("get ").length
+        elts.push(visit(node.name))
+        elts.push(visit(node.func.func))  // FIXME remove intermediate literalfunction
+        return {
+            "tag": "tspan",
+            "class": "virtualField",
+            "elts": elts
+        } 
+    }
+
+    function computedName(node) {
+        print("computedName")
+        let elts = [ ]
+        elts.push(visit(node.expr))
+        return {
+            "tag": "tspan",
+            "class": "ComputedName",
+            "elts": elts
+        }
+    }
+
+    function arrayComprehension(node) {
+        print("arrayComprehension")
+        let elts = [ ]
+        let tempCol = col
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["["]
+        })
+        col = tempCol + 2
+        elts.push(visit(node.expr))
+        ln += 1
+        col = tempCol + 2
+        elts.push(visit(node.forList))
+        if (node.ifCond) {
+            col = tempCol + 2
+            elts.push(visit(node.ifCond))
+        }
+        ln += 1
+        col = tempCol
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["]"]
+        })
+        col += ("]").length
+        return {
+            "tag": "tspan",
+            "class": "ArrayComprehension",
+            "elts": elts
+        }
+    }
+
+    function comprehendFor(node) {
+        print("comprehendFor")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["for"]
+        })
+        col += ("for ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("( ").length
+        let tempCol = col
+        elts.push(visit(node.head))
+        col = tempCol
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["of"]
+        })
+        col += ("of ").length
+        elts.push(visit(node.iterator))
+        col += 1 // space after iterator
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        ln += 1
+        col = tempCol - ("for ( ").length
+        if (node.subclause) {
+            elts.push(visit(node.subclause))
+        }
+        return {
+            "tag": "tspan",
+            "class": "comprehendFor",
+            "elts": elts
+        } 
+    }
+
+    function comprehendIf(node) {
+        print("comprehendIf")
+        let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "keyword",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["if"]
+        })
+        col += ("if ").length
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": ["("]
+        })
+        col += ("(").length + 1
+        elts.push(visit(node.condition))
+        col += 1
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [")"]
+        })
+        return {
+            "tag": "tspan",
+            "class": "comprehendIf",
+            "elts": elts
+        } 
+        ln += 1
+    }
+
+    function literalInt(node) {
+        print("literalInt col="+col)
+        let n = {
+            "tag": "tspan",
+            "class": "LiteralInt",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [node.intValue]
+        }
+        col += (String(node.intValue)).length
+        return n
+    }
+
+    function literalBoolean(node) {
+        print("literalBoolean")
+        let n = {
+            "tag": "tspan",
+            "class": "LiteralBoolean",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [ node.booleanValue ]
+        }
+        col += (String(node.booleanValue)).length
+        return n
+    }
+
+    function literalNull(node) {
+        print("literalNull")
+        let n = {
+            "tag": "tspan",
+            "class": "LiteralNull",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [ "null" ]
+        }
+        col += ("this").length
+        return n
+    }
+
+    function thisExpr(node) {
+        print("thisExpr")
+        let n = {
+            "tag": "tspan",
+            "class": "ThisExpr",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [ "this" ]
+        }
+        col += ("this").length
+        return n
+    }
+
+    function binaryOpText(op) {
+        print("binaryOpText() op="+op)
+        switch (op) {
+        case Ast::plusOp:
+            return "+"
+        case Ast::minusOp:
+            return "-"
+        case Ast::timesOp:
+            return "*"
+        case Ast::divideOp:
+            return "/"
+        case Ast::remainderOp:
+            return "%"
+        case Ast::leftShiftOp:
+            return "<<"
+        case Ast::rightShiftOp:
+            return ">>"
+        case Ast::rightShiftUnsignedOp:
+            return ">>>"
+        case Ast::bitwiseAndOp:
+            return "&"
+        case Ast::bitwiseOrOp:
+            return "|"
+        case Ast::bitwiseXorOp:
+            return "^"
+        case Ast::logicalAndOp:
+            return "&&"
+        case Ast::logicalOrOp:
+            return "||"
+        case Ast::instanceOfOp:
+            return "instanceof"
+        case Ast::inOp:
+            return "in"
+        case Ast::equalOp:
+            return "=="
+        case Ast::notEqualOp:
+            return "!="
+        case Ast::strictEqualOp:
+            return "==="
+        case Ast::strictNotEqualOp:
+            return "!=="
+        case Ast::lessOp:
+            return "<"
+        case Ast::lessOrEqualOp:
+            return "<="
+        case Ast::greaterOp:
+            return ">"
+        case Ast::greaterOrEqualOp:
+            return ">="
+        case Ast::commaOp:
+            return ","
+        }
+        throw "unhandled binary op: " + op;
+    }
+
+    function binaryExpr(node) {
+        print("binaryExpr")
+        let elts = [ ]
+        let tempCol = col
+        elts.push(visit(node.e1))
+        if (node.op != Ast::commaOp) {
+            col += 1
+        }
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "x": xFactor * col,
+            "y": yFactor * ln,
+            "elts": [binaryOpText(node.op)]
+        })
+        if (node.op == Ast::logicalAndOp ||
+            node.op == Ast::logicalOrOp ||
+            node.op == Ast::commaOp) {
+            ln += 1
+            col = tempCol
+        }
+        else {
+            col += binaryOpText(node.op).length + 1   // space after operator
+        }
+        elts.push(visit(node.e2))
+        return {
+            "tag": "tspan",
+            "class": "binaryExpr",
+            "elts": elts
+        } 
+    }
+
+    function unaryOpText(op) {
+        switch (op) {
+        case Ast::deleteOp:
+            return "delete"
+        case Ast::preIncrOp:
+        case Ast::postIncrOp:
+            return "++"
+        case Ast::preDecrOp:
+        case Ast::postDecrOp:
+            return "--"
+        case Ast::voidOp:
+            return "void"
+        case Ast::typeOfOp:
+            return "typeof"
+        case Ast::unaryPlusOp:
+            return "+"
+        case Ast::unaryMinusOp:
+            return "-"
+        case Ast::bitwiseNotOp:
+            return "~"
+        case Ast::logicalNotOp:
+            return "!"
+        case Ast::spreadOp:
+            return "..."
+        }
+        throw "unhandled unary op: " + op;
+    }
+
+    function unaryExpr(node) {
+        print("unaryExpr")
+        let elts = [ ]
+        if (node.op == Ast::parenOp) {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["("]
+            })
+            col += "(".length
+            elts.push(visit(node.e1))
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": [")"]
+            })
+            col += ")".length
+        }
+        else {
+            if (node.op != Ast::postIncrOp &&
+                node.op != Ast::postDecrOp) {
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": [unaryOpText(node.op)]
+                })
+                col += unaryOpText(node.op).length
+                if (node.op == Ast::deleteOp ||
+                    node.op == Ast::voidOp ||
+                    node.op == Ast::typeOfOp) {
+                    col += 1   // space after operator
+                }
+            }
+            elts.push(visit(node.e1))
+            if (node.op == Ast::postIncrOp ||
+                node.op == Ast::postDecrOp) {
+                elts.push({
+                    "tag": "tspan",
+                    "class": "punc",
+                    "x": xFactor * col,
+                    "y": yFactor * ln,
+                    "elts": [unaryOpText(node.op)]
+                })
+                col += unaryOpText(node.op).length
+            }
+        }
+        return {
+            "tag": "tspan",
+            "class": "unaryExpr",
+            "elts": elts
+        } 
+    }
+
+    function objectRef(node) {
+        print("objectRef")
+        let elts = [ ]
+        //let tempCol = col 
+        elts.push(visit(node.base))
+        //col = tempCol
+        if (node.ident.tag==="ComputedName") {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["["]
+            })
+            col += "[".length
+            elts.push(visit(node.ident))
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["]"]
+            })
+            col += "]".length
+        }
+        else {
+            elts.push({
+                "tag": "tspan",
+                "class": "punc",
+                "x": xFactor * col,
+                "y": yFactor * ln,
+                "elts": ["."]
+            })
+            col += ".".length
+            elts.push(visit(node.ident))
+        }
+        return {
+            "tag": "tspan",
+            "class": "objectRef",
+            "elts": elts
+        } 
+     }
+
+     function stub(node) {
+        print("stub: " + node.tag)
+        return ""
+     }
+}

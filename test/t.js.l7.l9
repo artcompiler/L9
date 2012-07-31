@@ -6,6 +6,32 @@
         "class": "Head", 
         "elts": [
           [
+            { "tag": "tspan", 
+              "class": "Fixture", 
+              "elts": [
+                { "tag": "tspan", 
+                  "x": 15, 
+                  "elts": [
+                    "var"
+                  ], 
+                  "class": "keyword", 
+                  "y": 25
+                }, 
+                { "tag": "tspan", 
+                  "class": "Name", 
+                  "elts": [
+                    { "tag": "tspan", 
+                      "x": 75, 
+                      "elts": [
+                        "p"
+                      ], 
+                      "class": "ident", 
+                      "y": 25
+                    }
+                  ]
+                }
+              ]
+            }
           ], 
           [
           ]
@@ -13,92 +39,104 @@
       }, 
       [
         { "tag": "tspan", 
-          "class": "ExprStmt", 
+          "class": "ForInBindingStmt", 
           "elts": [
             { "tag": "tspan", 
-              "class": "CallExpr", 
+              "x": 15, 
               "elts": [
-                { "tag": "tspan", 
-                  "x": 15, 
-                  "fill": "#F0F", 
-                  "elts": [
-                    "print"
-                  ], 
-                  "class": "Identifier", 
-                  "y": 25
-                }, 
+                "for"
+              ], 
+              "class": "keyword", 
+              "y": 50
+            }, 
+            { "tag": "tspan", 
+              "x": 75, 
+              "elts": [
+                "("
+              ], 
+              "class": "punc", 
+              "y": 50
+            }, 
+            { "tag": "tspan", 
+              "class": "Head", 
+              "elts": [
+                [
+                ], 
+                [
+                ]
+              ]
+            }, 
+            { "tag": "tspan", 
+              "class": "Name", 
+              "elts": [
                 { "tag": "tspan", 
                   "x": 90, 
                   "elts": [
-                    "("
+                    "p"
                   ], 
-                  "class": "punc", 
-                  "y": 25
-                }, 
-                [
-                  { "tag": "tspan", 
-                    "x": 105, 
-                    "fill": "#00F", 
-                    "elts": [
-                      "\'hello, world!\'"
-                    ], 
-                    "class": "LiteralString", 
-                    "y": 25
-                  }
-                ], 
-                { "tag": "tspan", 
-                  "x": 330, 
-                  "elts": [
-                    ")"
-                  ], 
-                  "class": "punc", 
-                  "y": 25
+                  "class": "ident", 
+                  "y": 50
                 }
               ]
-            }
-          ]
-        }, 
-        { "tag": "tspan", 
-          "class": "ExprStmt", 
-          "elts": [
+            }, 
             { "tag": "tspan", 
-              "class": "CallExpr", 
+              "x": 120, 
+              "elts": [
+                "in"
+              ], 
+              "class": "punc", 
+              "y": 50
+            }, 
+            { "tag": "tspan", 
+              "x": 165, 
+              "elts": [
+                "o"
+              ], 
+              "class": "Identifier", 
+              "y": 50
+            }, 
+            { "tag": "tspan", 
+              "x": 180, 
+              "elts": [
+                ")"
+              ], 
+              "class": "punc", 
+              "y": 50
+            }, 
+            { "tag": "tspan", 
+              "class": "BlockStmt", 
               "elts": [
                 { "tag": "tspan", 
                   "x": 15, 
-                  "fill": "#F0F", 
                   "elts": [
-                    "print"
-                  ], 
-                  "class": "Identifier", 
-                  "y": 50
-                }, 
-                { "tag": "tspan", 
-                  "x": 90, 
-                  "elts": [
-                    "("
+                    "{"
                   ], 
                   "class": "punc", 
-                  "y": 50
+                  "y": 75
                 }, 
-                [
-                  { "tag": "tspan", 
-                    "x": 105, 
-                    "fill": "#00F", 
-                    "elts": [
-                      "\'adios, world!\'"
-                    ], 
-                    "class": "LiteralString", 
-                    "y": 50
-                  }
-                ], 
                 { "tag": "tspan", 
-                  "x": 330, 
+                  "class": "Block", 
                   "elts": [
-                    ")"
+                    { "tag": "tspan", 
+                      "class": "Head", 
+                      "elts": [
+                        [
+                        ], 
+                        [
+                        ]
+                      ]
+                    }, 
+                    [
+                    ]
+                  ]
+                }, 
+                { "tag": "tspan", 
+                  "x": 15, 
+                  "elts": [
+                    "}"
                   ], 
                   "class": "punc", 
-                  "y": 50
+                  "y": 125
                 }
               ]
             }

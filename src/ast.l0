@@ -412,6 +412,7 @@ const bitwiseNotOp = 9;
 const logicalNotOp = 10;
 const typeOp = 11;
 const spreadOp = 12;
+const parenOp = 13;
 
 function unaryOpStr(op) {
     switch (op) {

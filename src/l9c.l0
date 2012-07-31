@@ -70,7 +70,7 @@
         // Render JSON
         let str = json.toString(svgast);
 
-        print(str)
+        //print(str)
 
         // Write file
         Util::writeStringToFile(str, fname + ".l9");

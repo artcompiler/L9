@@ -1,23 +1,40 @@
 { "tag": "Program", 
-  "body": [{ "tag": "ExprStmt", 
-  "expr": { "tag": "CallExpr", 
-  "expr": { "tag": "Identifier", 
-  "ident": "print"}
-,  "args": [{ "tag": "LiteralString", 
-  "strValue": "hello, world!"}]
-,  "spread": null
-,  "pos": 1
-,  "strict": false}},{ "tag": "ExprStmt", 
-  "expr": { "tag": "CallExpr", 
-  "expr": { "tag": "Identifier", 
-  "ident": "print"}
-,  "args": [{ "tag": "LiteralString", 
-  "strValue": "adios, world!"}]
-,  "spread": null
-,  "pos": 2
-,  "strict": false}}]
+  "body": [{ "tag": "ForInBindingStmt", 
+  "head": { "tag": "Head", 
+  "fixtures": []
+,  "exprs": []}
+,  "assignment": { "tag": "InitExpr", 
+  "target": null
 ,  "head": { "tag": "Head", 
   "fixtures": []
+,  "exprs": []}
+,  "inits": [{ "tag": "InitBinding", 
+  "name": { "tag": "Name", 
+  "id": "p"}
+,  "expr": { "tag": "GetCogenTemp"}}]}
+,  "tmp": { "tag": "GetCogenTemp"}
+,  "init": { "tag": "InitExpr", 
+  "target": 0
+,  "head": { "tag": "Head", 
+  "fixtures": []
+,  "exprs": []}
+,  "inits": []}
+,  "obj": { "tag": "Identifier", 
+  "ident": "o"}
+,  "stmt": { "tag": "BlockStmt", 
+  "block": { "tag": "Block", 
+  "head": { "tag": "Head", 
+  "fixtures": []
+,  "exprs": []}
+,  "stmts": []}}
+,  "is_each": false
+,  "labels": []}]
+,  "head": { "tag": "Head", 
+  "fixtures": [{ "tag": "Fixture", 
+  "name": { "tag": "Name", 
+  "id": "p"}
+,  "data": { "tag": "ValFixture", 
+  "isReadOnly": false}}]
 ,  "exprs": []}
 ,  "attr": { "tag": "FuncAttr", 
   "uses_arguments": false

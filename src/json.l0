@@ -84,6 +84,9 @@ class JSON {
         else if (node is LiteralInt) {
             return node.intValue;
         }
+        else if (node is LiteralDouble) {
+            return node.doubleValue;
+        }
         else if (node is LiteralString) {
             return String(node.strValue);
         }
@@ -112,7 +115,7 @@ class JSON {
             return val;
         }
         else if (node is LiteralNull) {
-            return "null";
+            return null;
         }
         else if (node is Identifier) {
             return node.ident;
@@ -183,7 +186,7 @@ class JSON {
                 break;
             case "string":
                 str += '"' + obj[p].replace(new RegExp("\\\\", "g"), "\\\\")
-                                   .replace(new RegExp("'", "g"), "\\'")
+//                                   .replace(new RegExp("'", "g"), "\\\\\\'")
                                    .replace(new RegExp("\n", "g"), "") + '"';
                 break;
             default:
