@@ -203,13 +203,12 @@ class InitBinding extends ASTNode implements Serializable {
 
 class Name extends ASTNode implements Serializable {
     const ns;
-    const id;
+    const ident;
     const tokens;
-    function Name(ns, id, tokens) : ns=ns, id=id, tokens=tokens {}
+    function Name(ns, ident, tokens) : ns=ns, ident=ident, tokens=tokens {}
      
     function serialize(s)
-        //s.sClass(this, "Name", "ns", "id");
-        s.sClass(this, "Name", "id");
+        s.sClass(this, "Name", "ident");
 
     override function toks()
         tokens

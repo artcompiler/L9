@@ -38,8 +38,8 @@
 
 class Transformer extends Visitor {
 
-    const xFactor = 15
-    const yFactor = 25
+    const xFactor = 7
+    const yFactor = 10
 
     var root
 
@@ -68,7 +68,7 @@ class Transformer extends Visitor {
             "YieldExpr" : stub,
             "SuperExpr" : stub,
             "CallExpr" : callExpr,
-            "NewExpr" : stub,
+            "NewExpr" : newExpr,
             "ObjectRef" : objectRef,
             "ComputedName" : computedName,
             "SetExpr" : setExpr,
@@ -137,6 +137,8 @@ class Transformer extends Visitor {
 
     function program(node) {
         print("program")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.head))
         elts.push(visit(node.body))  // FIXME stmts
@@ -144,6 +146,11 @@ class Transformer extends Visitor {
         let n = { 
             "tag": "tspan",
             "class": "Program",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
         return n
@@ -151,6 +158,8 @@ class Transformer extends Visitor {
 
     function exprStmt(node) {
         print("exprStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.expr))
         ln += 1
@@ -158,58 +167,86 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "ExprStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function returnStmt(node) {
         print("returnStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": (col += ("return ").length),
+            "stopLn": ln,
             "elts": ["return"]
         })
-        col += ("return ").length
         elts.push(visit(node.expr))
         return {
             "tag": "tspan",
             "class": "ReturnStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function throwStmt(node) {
         print("throwStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": (col += "throw ".length),
+            "stopLn": ln,
             "elts": ["throw"]
         })
-        col += "throw ".length
         elts.push(visit(node.expr))
         ln += 1
         col = indent()
         return {
             "tag": "tspan",
             "class": "ThrowStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function continueStmt(node) {
         print("continueStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["continue"]
         })
         if (node.ident) {
@@ -221,18 +258,28 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "ContinueStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function breakStmt(node) {
         print("breakStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["break"]
         })
         if (node.ident) {
@@ -244,12 +291,19 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "BreakStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function letExpr(node) {
         print("letExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.head))
         ln += 1
@@ -260,18 +314,28 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "LetExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function blockStmt(node) {
         print("blockStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["{"]
         })
         ln += 1
@@ -281,37 +345,59 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["}"]
         })
         return {
             "tag": "tspan",
             "class": "BlockStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function block(node) {
         print("block")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.head))
         elts.push(visit(node.stmts))
         return { 
             "tag": "tspan",
             "class": "Block",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function ifStmt(node) {
         print("ifStmt")
+        let startCol = col
+        let startLn = ln
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["if"]
         })
         col += ("if ").length
@@ -321,8 +407,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["{"]
             })
             ln++
@@ -335,8 +424,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["}"]
             })
         }
@@ -345,8 +437,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "keyword",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["else"]
             })
             col += ("else ").length
@@ -355,8 +450,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": ["{"]
                 })
                 ln++
@@ -369,8 +467,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": ["}"]
                 })
             }
@@ -379,18 +480,28 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "IfStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
-        } 
+        }
     }
 
     function whileStmt(node) {
         print("whileStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["while"]
         })
         col += ("while ").length
@@ -400,8 +511,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["{"]
             })
             ln++
@@ -414,8 +528,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["}"]
             })
         }
@@ -423,26 +540,39 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "WhileStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function doWhileStmt(node) {
         print("doWhileStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["do"]
         })
         col += ("do ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["{"]
         })
         ln += 1
@@ -453,24 +583,33 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["}"]
         })
         ln += 1
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["while"]
         })
         col += ("while ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("(").length
@@ -478,8 +617,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         ln += 1
@@ -487,26 +629,39 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "DoWhileStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function forStmt(node) {
         print("forStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["for"]
         })
         col += ("for ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("(").length
@@ -515,8 +670,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [";"]
         })
         col += ("; ").length
@@ -526,8 +684,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [";"]
         })
         col += ("; ").length
@@ -537,8 +698,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         col += ") ".length
@@ -546,8 +710,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["{"]
             })
             ln++
@@ -560,8 +727,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["}"]
             })
         }
@@ -569,26 +739,39 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "ForStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function forBindingStmt(node) {
         print("forBindingStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["for"]
         })
         col += ("for ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("(").length
@@ -596,8 +779,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [";"]
         })
         col += ("; ").length
@@ -605,8 +791,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [";"]
         })
         col += ("; ").length
@@ -614,28 +803,41 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         elts.push(visit(node.stmt))
         return {
             "tag": "tspan",
             "class": "ForBindingStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function setExpr(node) {
         print("setExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.le))
         col += 1
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["="]
         })
         col += ("= ").length
@@ -643,102 +845,40 @@ class Transformer extends Visitor {
         return { 
             "tag": "tspan",
             "class": "SetExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function forInBindingStmt(node) {
         print("forInBindingStmt")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
 
-/*
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["head"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.head))
-        ln += 1
-        col = indent()
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["assignment"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.assignment))
-        ln += 1
-        col = indent()
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["tmp"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.tmp))
-        ln += 1
-        col = indent()
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["obj"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.obj))
-        ln += 1
-        col = indent()
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["init"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.init))
-        ln += 1
-        col = indent()
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": ["stmt"]
-        })
-        ln += 1
-        col = indent()
-        elts.push(visit(node.stmt))
-        ln += 1
-        col = indent()
-
-*/
-        elts.push({
-            "tag": "tspan",
-            "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["for"]
         })
         col += ("for ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("(").length
@@ -748,8 +888,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["in"]
         })
         col += ("in ").length
@@ -757,8 +900,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         ln += 1
@@ -770,32 +916,49 @@ class Transformer extends Visitor {
         return { 
             "tag": "tspan",
             "class": "ForInBindingStmt",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function initExpr(node) {
         print("initExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.head))
         elts.push(visit(node.inits))
         return { 
             "tag": "tspan",
             "class": "InitExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function initBinding(node) {
         print("initBinding")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.name))
         col += 1
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["="]
         })
         col += ("= ").length
@@ -803,23 +966,49 @@ class Transformer extends Visitor {
         return { 
             "tag": "tspan",
             "class": "InitBinding",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
         
     }
 
-    function callExpr(node) {
+    function newExpr(node) {
+        return callExpr(node, true)
+    }
+
+    function callExpr(node, isNew=false) {
         print("callExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
+        if (isNew) {
+            elts.push({
+                "tag": "tspan",
+                "class": "keyword",
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col+="new ".length,
+                "stopLn": ln,
+                "elts": ["new"]
+            })
+        }            
         elts.push(visit(node.expr))
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += ("(").length,
+            "stopLn": ln,
             "elts": ["("]
         })
-        col += ("(").length
+        
         //elts.push(visit(node.args))
         if (node.args.length > 0) {
             indent(+1)
@@ -833,11 +1022,13 @@ class Transformer extends Visitor {
                     elts.push({
                         "tag": "tspan",
                         "class": "punc",
-                        "x": xFactor * col,
-                        "y": yFactor * ln,
+                        "id": node.id,
+                        "startCol": col,
+                        "startLn": ln,
+                        "stopCol": col += ", ".length,
+                        "stopLn": ln,
                         "elts": [","]
                     })
-                    col += ", ".length
                 }
             }
             indent(-1)
@@ -846,14 +1037,22 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         }) 
         col += (")").length
         let n = {
             "tag": "tspan",
-            "class": "CallExpr",
+            "class": isNew ? "NewExpr" : "CallExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
         return n
@@ -861,27 +1060,38 @@ class Transformer extends Visitor {
 
     function head(node) {
         print("head")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.fixtures))
         elts.push(visit(node.exprs))
         return {
             "tag": "tspan",
             "class": "Head",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function fixture(node) {
         print("fixture")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += "var".length+1,
+            "stopLn": ln,
             "elts": ["var"]
         })
-        col += ("var ").length
         elts.push(visit(node.name))
         ln += 1
         col = indent()
@@ -889,100 +1099,157 @@ class Transformer extends Visitor {
         return { 
             "tag": "tspan",
             "class": "Fixture",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function name(node) {
         print("name")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "ident",
-            "x": xFactor * col,
-            "y": yFactor * ln,
-            "elts": [String(node.id)]
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
+            "elts": [String(node.ident)]
         })
-        col += (String(node.id)).length
+        col += (String(node.ident)).length
         return {
             "tag": "tspan",
             "class": "Name",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function tempName(node) {
         print("tempName")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "ident",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["$t"+node.index]
         })
         col += ("$t"+node.index).length
         return {
             "tag": "tspan",
             "class": "TempName",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function getCogenTemp(node) {
         print("getCogenTemp")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         return {
             "tag": "tspan",
             "class": "GetCogenTemp",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function getTemp(node) {
         print("getTemp")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "ident",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["$t"+node.n]
         })
         col += ("$t"+node.n).length
         return {
             "tag": "tspan",
             "class": "GetTemp",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function getParam(node) {
         print("getParam")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "ident",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [""+node.n]
         })
         col += (""+node.n).length
         return {
             "tag": "tspan",
             "class": "GetParam",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function literalFunction(node) {
         print("literalFunction")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["function"]
         })
         col += ("function ").length
@@ -990,17 +1257,29 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "LiteralFunction",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function methodFixture(node) {
         print("methodFixture")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.func))
         return {
             "tag": "tspan",
             "class": "MethodFixture",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
@@ -1011,6 +1290,11 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "ValFixture",
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
@@ -1028,12 +1312,17 @@ class Transformer extends Visitor {
 
     function func(node) {
         print("func")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += "(".length
@@ -1055,8 +1344,11 @@ class Transformer extends Visitor {
                     elts.push({
                         "tag": "tspan",
                         "class": "punc",
-                        "x": xFactor * col,
-                        "y": yFactor * ln,
+                        "id": node.id,
+                        "startCol": col,
+                        "startLn": ln,
+                        "stopCol": col,
+                        "stopLn": ln,
                         "elts": [","]
                     })
                     col = indent()
@@ -1067,8 +1359,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [") {"]
         })
         if (node.vars.length || node.body.length) {
@@ -1083,20 +1378,30 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["}"]
         })
         col += 1
         return {
             "tag": "tspan",
             "class": "Func",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function funcName(node) {
         print("funcName")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         switch (node.kind) {
         case 0:
@@ -1110,8 +1415,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "FuncName",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
         col += (node.ident + " ").length
@@ -1120,19 +1428,22 @@ class Transformer extends Visitor {
 
     function identifier(node) {
         print("identifier")
-        let n = {
+        return {
             "tag": "tspan",
             "class": "Identifier",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += node.ident.length,
+            "stopLn": ln,
             "elts": [node.ident]
         }
-        col += (node.ident).length
-        return n
     }
 
     function literalString(node) {
         print("literalString")
+        let startCol = col
+        let startLn = ln
         let elts = []
         if (node.strValue.charAt(0) === "'") {
             elts.push('"'+node.strValue+'"')
@@ -1143,11 +1454,13 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "LiteralString",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": (col += (node.strValue + "  ").length),
+            "stopLn": ln,
             "elts": elts
         }
-        col += (node.strValue + "  ").length
         return n        
     }
 
@@ -1156,8 +1469,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "LiteralUndefined",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["void 0"]
         }
         col += ("void 0").length
@@ -1166,13 +1482,18 @@ class Transformer extends Visitor {
 
     function literalArray(node) {
         print("literalArray")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         let tempCol = col
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * tempCol,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["["]
         })
         for (let i = 0; i < node.exprs.length; i++) {
@@ -1185,8 +1506,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": [","]
                 })
                 ln += 1
@@ -1196,8 +1520,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["..."]
             })
             col += ("...").length
@@ -1206,8 +1533,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": [","]
                 })
                 ln += 1
@@ -1225,28 +1555,41 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["]"]
         })
         col += ("]").length
         return {
             "tag": "tspan",
             "class": "LiteralArray",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function literalObject(node) {
         print("literalObject")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         let tempCol = col
         if (node.fields.length > 0) {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["{"]
             })
             indent(+1)
@@ -1258,8 +1601,11 @@ class Transformer extends Visitor {
                     elts.push({
                         "tag": "tspan",
                         "class": "punc",
-                        "x": xFactor * col,
-                        "y": yFactor * ln,
+                        "id": node.id,
+                        "startCol": col,
+                        "startLn": ln,
+                        "stopCol": col,
+                        "stopLn": ln,
                         "elts": [","]
                     })
                 }
@@ -1269,8 +1615,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["}"]
             })
             col += ("}").length
@@ -1279,8 +1628,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["{ }"]
             })
             col += "{}".length
@@ -1288,38 +1640,77 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "LiteralObject",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function literalField(node) {
         print("literalField")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += "'".length,
+            "stopLn": ln,
+            "elts": ["'"]
+        })
         elts.push(visit(node.ident))
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += "'".length,
+            "stopLn": ln,
+            "elts": ["'"]
+        })
+        elts.push({
+            "tag": "tspan",
+            "class": "punc",
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col += ": ".length,
+            "stopLn": ln,
             "elts": [":"]
         })
-        col += ": ".length
         elts.push(visit(node.expr))
         return {
             "tag": "tspan",
             "class": "literalField",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function virtualField(node) {
         print("virtualField")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [ node.kind===1 ? "get" : "set" ]
         })
         col += ("get ").length
@@ -1328,30 +1719,47 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "virtualField",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function computedName(node) {
         print("computedName")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push(visit(node.expr))
         return {
             "tag": "tspan",
             "class": "ComputedName",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function arrayComprehension(node) {
         print("arrayComprehension")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         let tempCol = col
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["["]
         })
         col = tempCol + 2
@@ -1368,34 +1776,50 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["]"]
         })
         col += ("]").length
         return {
             "tag": "tspan",
             "class": "ArrayComprehension",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         }
     }
 
     function comprehendFor(node) {
         print("comprehendFor")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["for"]
         })
         col += ("for ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("( ").length
@@ -1405,8 +1829,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["of"]
         })
         col += ("of ").length
@@ -1415,8 +1842,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         ln += 1
@@ -1427,26 +1857,39 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "comprehendFor",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function comprehendIf(node) {
         print("comprehendIf")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         elts.push({
             "tag": "tspan",
             "class": "keyword",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["if"]
         })
         col += ("if ").length
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": ["("]
         })
         col += ("(").length + 1
@@ -1455,13 +1898,21 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [")"]
         })
         return {
             "tag": "tspan",
             "class": "comprehendIf",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
         ln += 1
@@ -1472,8 +1923,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "LiteralInt",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [node.intValue]
         }
         col += (String(node.intValue)).length
@@ -1485,8 +1939,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "LiteralBoolean",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [ node.booleanValue ]
         }
         col += (String(node.booleanValue)).length
@@ -1498,8 +1955,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "LiteralNull",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [ "null" ]
         }
         col += ("this").length
@@ -1511,8 +1971,11 @@ class Transformer extends Visitor {
         let n = {
             "tag": "tspan",
             "class": "ThisExpr",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [ "this" ]
         }
         col += ("this").length
@@ -1576,6 +2039,8 @@ class Transformer extends Visitor {
 
     function binaryExpr(node) {
         print("binaryExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         let tempCol = col
         elts.push(visit(node.e1))
@@ -1585,8 +2050,11 @@ class Transformer extends Visitor {
         elts.push({
             "tag": "tspan",
             "class": "punc",
-            "x": xFactor * col,
-            "y": yFactor * ln,
+            "id": node.id,
+            "startCol": col,
+            "startLn": ln,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": [binaryOpText(node.op)]
         })
         if (node.op == Ast::logicalAndOp ||
@@ -1602,6 +2070,11 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "binaryExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
@@ -1636,13 +2109,18 @@ class Transformer extends Visitor {
 
     function unaryExpr(node) {
         print("unaryExpr")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         if (node.op == Ast::parenOp) {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["("]
             })
             col += "(".length
@@ -1650,8 +2128,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": [")"]
             })
             col += ")".length
@@ -1662,8 +2143,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": [unaryOpText(node.op)]
                 })
                 col += unaryOpText(node.op).length
@@ -1679,8 +2163,11 @@ class Transformer extends Visitor {
                 elts.push({
                     "tag": "tspan",
                     "class": "punc",
-                    "x": xFactor * col,
-                    "y": yFactor * ln,
+                    "id": node.id,
+                    "startCol": col,
+                    "startLn": ln,
+                    "stopCol": col,
+                    "stopLn": ln,
                     "elts": [unaryOpText(node.op)]
                 })
                 col += unaryOpText(node.op).length
@@ -1689,12 +2176,19 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "unaryExpr",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
     }
 
     function objectRef(node) {
         print("objectRef")
+        let startCol = col
+        let startLn = ln
         let elts = [ ]
         //let tempCol = col 
         elts.push(visit(node.base))
@@ -1703,8 +2197,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["["]
             })
             col += "[".length
@@ -1712,8 +2209,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["]"]
             })
             col += "]".length
@@ -1722,8 +2222,11 @@ class Transformer extends Visitor {
             elts.push({
                 "tag": "tspan",
                 "class": "punc",
-                "x": xFactor * col,
-                "y": yFactor * ln,
+                "id": node.id,
+                "startCol": col,
+                "startLn": ln,
+                "stopCol": col,
+                "stopLn": ln,
                 "elts": ["."]
             })
             col += ".".length
@@ -1732,6 +2235,11 @@ class Transformer extends Visitor {
         return {
             "tag": "tspan",
             "class": "objectRef",
+            "id": node.id,
+            "startCol": startCol,
+            "startLn": startLn,
+            "stopCol": col,
+            "stopLn": ln,
             "elts": elts
         } 
      }
