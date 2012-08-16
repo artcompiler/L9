@@ -38,13 +38,17 @@
 
 class Visitor {
 
-    // table is a map from tag names to visitor methods
-    var table;
+    var table;        // map from tag names to visitor methods
+    var pool = { }    // map from node ids to nodes
 
     function Visitor(table="empty") 
         : table = table { }
 
     public function visit(node) {
+
+        if (pool[node.id] === void 0) {
+            pool[node.id] = node
+        }
 
         if (isString(node)) {
             return node
@@ -65,7 +69,10 @@ class Visitor {
         if (isObject(node)) {
             //print("visit() node.tag="+node.tag)
 
-            if (node.tag && isFunction(table[node.tag])) {
+            if (node.tag === void 0) {
+                return [ ]  // clean up stubs
+            }
+            else if (isFunction(table[node.tag])) {
                 return table[node.tag](node)
             }
             else {

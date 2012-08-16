@@ -135,16 +135,29 @@ class Transformer extends Visitor {
 
     // BEGIN VISITOR METHODS
 
+    var edgesNode
+
     function program(node) {
         print("program")
         let startCol = col
         let startLn = ln
         let elts = [ ]
+        let edges = {
+            "tag": "g",
+            "class": "edges",
+            "stroke": "grey",
+            "stroke-width": "1px",
+            "stroke-opacity": "0.4",
+            "fill": "none",
+            "elts": [ ]
+        }
+        this.edgesNode = edges
         elts.push(visit(node.head))
         elts.push(visit(node.body))  // FIXME stmts
 //        elts.push(visit(node.attr))  // FIXME attrs
-        let n = { 
-            "tag": "tspan",
+//        elts.push(edges)
+        let n = {
+            "tag": "text",
             "class": "Program",
             "id": node.id,
             "startCol": startCol,
@@ -153,7 +166,11 @@ class Transformer extends Visitor {
             "stopLn": ln,
             "elts": elts
         }
-        return n
+        return {
+            "tag": "g",
+            "class": "root",
+            "elts": [n, edges]
+        }
     }
 
     function exprStmt(node) {
@@ -433,7 +450,7 @@ class Transformer extends Visitor {
             })
         }
         ln++
-        if (node.alternate) {
+        if (node.alternate && node.alternate.tag) {
             elts.push({
                 "tag": "tspan",
                 "class": "keyword",
@@ -460,6 +477,7 @@ class Transformer extends Visitor {
                 ln++
                 col = indent(+1)
             }
+            print("alternate="+node.alternate.tag)
             elts.push(visit(node.alternate))
             if (node.alternate.tag !== "BlockStmt") {
                 ln++
@@ -842,6 +860,15 @@ class Transformer extends Visitor {
         })
         col += ("= ").length
         elts.push(visit(node.re))
+        if (node.write) {
+            let dest = node.write[0]
+            edgesNode.elts.push({
+                "tag": "path",
+                "class": "SetExpr",
+                "id": node.id + dest,
+                "d": [ "M", startCol, startLn, dest ]
+            })
+        }
         return { 
             "tag": "tspan",
             "class": "SetExpr",
@@ -963,6 +990,15 @@ class Transformer extends Visitor {
         })
         col += ("= ").length
         elts.push(visit(node.expr))
+        if (node.write) {
+            let dest = node.write[0]
+            edgesNode.elts.push({
+                "tag": "path",
+                "class": "InitBinding",
+                "id": node.id + dest,
+                "d": [ "M", startCol, startLn, dest ]
+            })
+        }
         return { 
             "tag": "tspan",
             "class": "InitBinding",
@@ -1428,12 +1464,23 @@ class Transformer extends Visitor {
 
     function identifier(node) {
         print("identifier")
+        let startCol = col
+        let startLn = ln
+        if (node.read) {
+            let dest = node.read[0]
+            edgesNode.elts.push({
+                "tag": "path",
+                "class": "Identifier",
+                "id": node.id + dest,
+                "d": [ "M", startCol, startLn, dest ]
+            })
+        }
         return {
             "tag": "tspan",
             "class": "Identifier",
             "id": node.id,
-            "startCol": col,
-            "startLn": ln,
+            "startCol": startCol,
+            "startLn": startLn,
             "stopCol": col += node.ident.length,
             "stopLn": ln,
             "elts": [node.ident]
